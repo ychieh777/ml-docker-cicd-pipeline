@@ -1,4 +1,4 @@
-name: ML Pipeline CI
+name: ML Pipeline CI/CD
 
 on:
   push:
@@ -21,10 +21,24 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run training script
-        run: |
-          python src/train.py
+      - name: Run training
+        run: python src/train.py
 
       - name: Run prediction test
-        run: |
-          python src/predict.py
+        run: python src/predict.py
+
+      # 🔥 NEW: Docker Build
+      - name: Build Docker image
+        run: docker build -t ml-pipeline .
+
+      # 🔥 NEW: Login Docker Hub
+      - name: Login to DockerHub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # 🔥 NEW: Tag image
+      - name: Tag image
+        run: docker tag ml-pipeline ${{ secrets.DOCKER_USERNAME }}/ml-pipeline:latest
+
+      # 🔥 NEW: Push image
+      - name: Push image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/ml-pipeline:latest
